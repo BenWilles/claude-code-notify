@@ -1,0 +1,92 @@
+{
+  "name": "claude-code-notify",
+  "displayName": "Claude Code Notify",
+  "description": "Audio notifications for Claude Code - Get notified when Claude needs your attention or completes a task",
+  "version": "1.0.0",
+  "publisher": "BenWilles",
+  "author": {
+    "name": "Ben Willes",
+    "url": "https://benwilles.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BenWilles/claude-code-notify"
+  },
+  "bugs": {
+    "url": "https://github.com/BenWilles/claude-code-notify/issues"
+  },
+  "homepage": "https://github.com/BenWilles/claude-code-notify#readme",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "notifications",
+    "audio",
+    "alerts",
+    "anthropic",
+    "ai",
+    "hooks"
+  ],
+  "icon": "resources/icon.png",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:claude-notify.sidebar",
+    "onCommand:claude-notify.install",
+    "onCommand:claude-notify.remove",
+    "onCommand:claude-notify.testAll"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "claude-notify",
+          "title": "Claude Notify",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "claude-notify": [
+        {
+          "type": "webview",
+          "id": "claude-notify.sidebar",
+          "name": "Settings"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "claude-notify.install",
+        "title": "Claude Notify: Install Hook"
+      },
+      {
+        "command": "claude-notify.remove",
+        "title": "Claude Notify: Remove Hook"
+      },
+      {
+        "command": "claude-notify.testAll",
+        "title": "Claude Notify: Test All Notifications"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "echo \"Error: no tests configured yet\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@vscode/codicons": "^0.0.44"
+  }
+}

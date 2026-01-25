@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src ${cspSource} 'unsafe-inline';">
+  <link rel="stylesheet" href="${styleUri}">
+  <title>Claude Notify</title>
+</head>
+<body>
+  <div class="container">
+    <!-- Status Section -->
+    <section class="section">
+      <h2>Status</h2>
+      <div class="status-row">
+        <span class="status-indicator" id="statusIndicator"></span>
+        <span id="statusText">Checking...</span>
+      </div>
+      <button id="installBtn" class="btn btn-primary">Install</button>
+    </section>
+
+    <!-- Global Settings -->
+    <section class="section">
+      <h2>Global Settings</h2>
+
+      <div class="setting-row">
+        <label for="enabledToggle">Enabled</label>
+        <label class="toggle">
+          <input type="checkbox" id="enabledToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <label for="volumeSlider">Volume</label>
+        <div class="slider-container">
+          <input type="range" id="volumeSlider" min="0" max="100" value="70">
+          <span id="volumeValue">70%</span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label for="cooldownSlider">Cooldown</label>
+        <div class="slider-container">
+          <input type="range" id="cooldownSlider" min="0" max="30" value="3">
+          <span id="cooldownValue">3s</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notifications -->
+    <section class="section">
+      <h2>Notifications</h2>
+
+      <!-- Permission Prompt -->
+      <div class="notification-card" data-type="permission_prompt">
+        <div class="notification-header">
+          <button class="collapse-btn" aria-expanded="true">
+            <span class="collapse-icon">▼</span>
+            <span class="notification-title">Permission Required</span>
+          </button>
+          <button class="btn btn-icon test-btn" title="Test">▶</button>
+        </div>
+        <div class="notification-body">
+          <div class="setting-row">
+            <label>Enabled</label>
+            <label class="toggle">
+              <input type="checkbox" class="notif-enabled" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label>Mode</label>
+            <select class="notif-mode">
+              <option value="talk">Talk</option>
+              <option value="sound">Sound</option>
+            </select>
+          </div>
+          <div class="talk-settings">
+            <div class="setting-row">
+              <label>Voice</label>
+              <select class="notif-voice"></select>
+            </div>
+            <div class="setting-row">
+              <label>Speed</label>
+              <div class="slider-container">
+                <input type="range" class="notif-speed" min="100" max="300" value="200">
+                <span class="speed-value">200</span>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label>Text</label>
+              <input type="text" class="notif-text" value="Permission required">
+            </div>
+          </div>
+          <div class="sound-settings" style="display: none;">
+            <div class="setting-row">
+              <label>Sound</label>
+              <select class="notif-sound"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Idle Prompt -->
+      <div class="notification-card" data-type="idle_prompt">
+        <div class="notification-header">
+          <button class="collapse-btn" aria-expanded="false">
+            <span class="collapse-icon">▶</span>
+            <span class="notification-title">Task Complete</span>
+          </button>
+          <button class="btn btn-icon test-btn" title="Test">▶</button>
+        </div>
+        <div class="notification-body collapsed">
+          <div class="setting-row">
+            <label>Enabled</label>
+            <label class="toggle">
+              <input type="checkbox" class="notif-enabled" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label>Mode</label>
+            <select class="notif-mode">
+              <option value="talk">Talk</option>
+              <option value="sound">Sound</option>
+            </select>
+          </div>
+          <div class="talk-settings">
+            <div class="setting-row">
+              <label>Voice</label>
+              <select class="notif-voice"></select>
+            </div>
+            <div class="setting-row">
+              <label>Speed</label>
+              <div class="slider-container">
+                <input type="range" class="notif-speed" min="100" max="300" value="200">
+                <span class="speed-value">200</span>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label>Text</label>
+              <input type="text" class="notif-text" value="Done">
+            </div>
+          </div>
+          <div class="sound-settings" style="display: none;">
+            <div class="setting-row">
+              <label>Sound</label>
+              <select class="notif-sound"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Elicitation Dialog -->
+      <div class="notification-card" data-type="elicitation_dialog">
+        <div class="notification-header">
+          <button class="collapse-btn" aria-expanded="false">
+            <span class="collapse-icon">▶</span>
+            <span class="notification-title">Input Needed</span>
+          </button>
+          <button class="btn btn-icon test-btn" title="Test">▶</button>
+        </div>
+        <div class="notification-body collapsed">
+          <div class="setting-row">
+            <label>Enabled</label>
+            <label class="toggle">
+              <input type="checkbox" class="notif-enabled" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label>Mode</label>
+            <select class="notif-mode">
+              <option value="talk">Talk</option>
+              <option value="sound">Sound</option>
+            </select>
+          </div>
+          <div class="talk-settings">
+            <div class="setting-row">
+              <label>Voice</label>
+              <select class="notif-voice"></select>
+            </div>
+            <div class="setting-row">
+              <label>Speed</label>
+              <div class="slider-container">
+                <input type="range" class="notif-speed" min="100" max="300" value="200">
+                <span class="speed-value">200</span>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label>Text</label>
+              <input type="text" class="notif-text" value="Input needed">
+            </div>
+          </div>
+          <div class="sound-settings" style="display: none;">
+            <div class="setting-row">
+              <label>Sound</label>
+              <select class="notif-sound"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Auth Success -->
+      <div class="notification-card" data-type="auth_success">
+        <div class="notification-header">
+          <button class="collapse-btn" aria-expanded="false">
+            <span class="collapse-icon">▶</span>
+            <span class="notification-title">Auth Success</span>
+          </button>
+          <button class="btn btn-icon test-btn" title="Test">▶</button>
+        </div>
+        <div class="notification-body collapsed">
+          <div class="setting-row">
+            <label>Enabled</label>
+            <label class="toggle">
+              <input type="checkbox" class="notif-enabled">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <label>Mode</label>
+            <select class="notif-mode">
+              <option value="talk">Talk</option>
+              <option value="sound" selected>Sound</option>
+            </select>
+          </div>
+          <div class="talk-settings" style="display: none;">
+            <div class="setting-row">
+              <label>Voice</label>
+              <select class="notif-voice"></select>
+            </div>
+            <div class="setting-row">
+              <label>Speed</label>
+              <div class="slider-container">
+                <input type="range" class="notif-speed" min="100" max="300" value="200">
+                <span class="speed-value">200</span>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label>Text</label>
+              <input type="text" class="notif-text" value="Authentication successful">
+            </div>
+          </div>
+          <div class="sound-settings">
+            <div class="setting-row">
+              <label>Sound</label>
+              <select class="notif-sound"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Save Button -->
+    <button id="saveBtn" class="btn btn-primary btn-save">Save Changes</button>
+  </div>
+
+  <script src="${scriptUri}"></script>
+</body>
+</html>
