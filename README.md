@@ -1,6 +1,16 @@
-# Claude Code Notify
+<p align="center">
+  <img src="resources/icon.png" alt="Claude Code Notify" width="128" height="128">
+</p>
 
-Voice and sound notifications for Claude Code - Get notified when Claude needs your attention or completes a task.
+<h1 align="center">Claude Code Notify</h1>
+
+<p align="center">
+  Voice and sound notifications for Claude Code - Get notified when Claude needs your attention or completes a task.
+</p>
+
+<p align="center">
+  <img src="resources/settings.png" alt="Settings" width="350">
+</p>
 
 ## Features
 
