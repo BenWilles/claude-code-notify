@@ -44,10 +44,10 @@ Each notification type can be configured independently:
 
 ## Installation
 
-1. Install the extension from the VS Code Marketplace
-2. Click the Claude Notify icon in the Activity Bar
-3. Click "Install Hook" to enable notifications
-4. Configure your preferred notification settings
+1. Download the latest `.vsix` file from [Releases](https://github.com/BenWilles/claude-code-notify/releases)
+2. In VS Code: Extensions → ⋯ → "Install from VSIX..."
+3. Click the Claude Notify icon in the Activity Bar
+4. Click "Install" to enable notifications
 5. Restart Claude Code for changes to take effect
 
 ## Usage
