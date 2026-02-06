@@ -2,7 +2,7 @@
   "name": "claude-code-notify",
   "displayName": "Claude Code Notify",
   "description": "Audio notifications for Claude Code - Get notified when Claude needs your attention or completes a task",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "BenWilles",
   "author": {
     "name": "Ben Willes",

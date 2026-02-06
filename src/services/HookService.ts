@@ -9,6 +9,7 @@ export class HookService {
   private readonly scriptPath: string;
   private readonly scriptBackupPath: string;
   private readonly stopScriptPath: string;
+  private readonly permissionScriptPath: string;  // For PermissionRequest hook (VSCode IDE)
   private readonly settingsPath: string;
   private readonly settingsLockPath: string;
 
@@ -18,6 +19,7 @@ export class HookService {
     this.scriptPath = path.join(this.hooksDir, 'notify.sh');
     this.scriptBackupPath = path.join(this.hooksDir, 'notify.sh.backup');
     this.stopScriptPath = path.join(this.hooksDir, 'stop-notify.sh');
+    this.permissionScriptPath = path.join(this.hooksDir, 'permission-notify.sh');
     this.settingsPath = path.join(this.claudeDir, 'settings.json');
     this.settingsLockPath = path.join(this.claudeDir, 'settings.json.lock');
   }
@@ -184,6 +186,13 @@ export class HookService {
     return hook.hooks?.some((hk) => hk.command === this.stopScriptPath) ?? false;
   }
 
+  /**
+   * Check if a hook entry matches our permission script path exactly.
+   */
+  private isOurPermissionHook(hook: ClaudeHookMatcher): boolean {
+    return hook.hooks?.some((hk) => hk.command === this.permissionScriptPath) ?? false;
+  }
+
   async isInstalled(): Promise<boolean> {
     try {
       // Check if script exists
@@ -219,7 +228,11 @@ export class HookService {
     const stopScript = this.generateStopScript(validatedConfig);
     await fs.promises.writeFile(this.stopScriptPath, stopScript, { mode: 0o755 });
 
-    // 5. Update settings.json with proper hook format (with locking)
+    // 5. Generate and write permission script for PermissionRequest hook (VSCode IDE support)
+    const permissionScript = this.generatePermissionScript(validatedConfig);
+    await fs.promises.writeFile(this.permissionScriptPath, permissionScript, { mode: 0o755 });
+
+    // 6. Update settings.json with proper hook format (with locking)
     await this.acquireSettingsLock();
     try {
       const settings = await this.loadSettings();
@@ -236,8 +249,13 @@ export class HookService {
           (h: ClaudeHookMatcher) => !this.isOurStopHook(h)
         );
       }
+      if (settings.hooks.PermissionRequest) {
+        settings.hooks.PermissionRequest = settings.hooks.PermissionRequest.filter(
+          (h: ClaudeHookMatcher) => !this.isOurPermissionHook(h)
+        );
+      }
 
-      // Add our Notification hook entry - matcher uses pipe-delimited notification types
+      // Add our Notification hook entry - for Terminal CLI support
       // The script itself handles filtering by notification_type
       const notifyHook: ClaudeHookMatcher = {
         matcher: 'permission_prompt|idle_prompt|elicitation_dialog',
@@ -251,6 +269,21 @@ export class HookService {
 
       settings.hooks.Notification = settings.hooks.Notification || [];
       settings.hooks.Notification.push(notifyHook);
+
+      // Add our PermissionRequest hook entry - for VSCode IDE support
+      // This hook fires when Claude needs permission in the IDE
+      const permissionHook: ClaudeHookMatcher = {
+        matcher: '*',
+        hooks: [
+          {
+            type: 'command',
+            command: this.permissionScriptPath
+          }
+        ]
+      };
+
+      settings.hooks.PermissionRequest = settings.hooks.PermissionRequest || [];
+      settings.hooks.PermissionRequest.push(permissionHook);
 
       // Add our Stop hook entry for response_complete notifications
       const stopHook: ClaudeHookMatcher = {
@@ -298,6 +331,16 @@ export class HookService {
         }
       }
 
+      // Remove our PermissionRequest hook
+      if (settings.hooks?.PermissionRequest) {
+        settings.hooks.PermissionRequest = settings.hooks.PermissionRequest.filter(
+          (h: ClaudeHookMatcher) => !this.isOurPermissionHook(h)
+        );
+        if (settings.hooks.PermissionRequest.length === 0) {
+          delete settings.hooks.PermissionRequest;
+        }
+      }
+
       if (settings.hooks && Object.keys(settings.hooks).length === 0) {
         delete settings.hooks;
       }
@@ -318,18 +361,27 @@ export class HookService {
     } catch {
       // Ignore if file doesn't exist
     }
+    try {
+      await fs.promises.unlink(this.permissionScriptPath);
+    } catch {
+      // Ignore if file doesn't exist
+    }
   }
 
   async regenerateScript(config: ClaudeNotifyConfig): Promise<void> {
     const validatedConfig = this.validateConfig(config);
 
-    // Regenerate notification script
+    // Regenerate notification script (for Terminal CLI)
     const script = this.generateScript(validatedConfig);
     await fs.promises.writeFile(this.scriptPath, script, { mode: 0o755 });
 
     // Regenerate stop script
     const stopScript = this.generateStopScript(validatedConfig);
     await fs.promises.writeFile(this.stopScriptPath, stopScript, { mode: 0o755 });
+
+    // Regenerate permission script (for VSCode IDE)
+    const permissionScript = this.generatePermissionScript(validatedConfig);
+    await fs.promises.writeFile(this.permissionScriptPath, permissionScript, { mode: 0o755 });
   }
 
   private generateScript(config: ClaudeNotifyConfig): string {
@@ -416,6 +468,73 @@ case "$TYPE" in
         ;;
 esac
 
+exit 0
+`;
+
+    return script;
+  }
+
+  /**
+   * Generate the PermissionRequest hook script for VSCode IDE.
+   * This script runs when Claude needs permission in the IDE.
+   * Note: The Notification hook doesn't work in VSCode IDE, so we use PermissionRequest instead.
+   */
+  private generatePermissionScript(config: ClaudeNotifyConfig): string {
+    const volume = this.clampNumber(config.volume, 0, 100, 70);
+    const volumeDecimal = volume / 100;
+    const cooldown = this.clampNumber(config.cooldown, 0, 30, 3);
+
+    const setting = config.notifications.permission_prompt;
+
+    let script = `#!/bin/bash
+# Claude Code Notify - PermissionRequest Hook Script (Auto-generated)
+# Do not edit manually, changes will be overwritten
+# This script runs when Claude needs permission in VSCode IDE
+
+# ============ CONFIG ============
+ENABLED="${config.enabled === true}"
+PERMISSION_PROMPT_ENABLED="${setting.enabled === true}"
+VOLUME="${volumeDecimal}"
+COOLDOWN="${cooldown}"
+# ================================
+
+# Exit if disabled globally or permission_prompt is disabled
+if [[ "$ENABLED" != "true" || "$PERMISSION_PROMPT_ENABLED" != "true" ]]; then
+    exit 0
+fi
+
+# Cooldown check (use separate lockfile to not interfere with other hooks)
+LOCKFILE="/tmp/claude-notify-permission.lock"
+if [[ -f "$LOCKFILE" && "$COOLDOWN" -gt 0 ]]; then
+    LAST=$(cat "$LOCKFILE" 2>/dev/null || echo 0)
+    NOW=$(date +%s)
+    if (( NOW - LAST < COOLDOWN )); then
+        exit 0
+    fi
+fi
+echo $(date +%s) > "$LOCKFILE"
+
+# Play notification
+`;
+
+    if (setting.mode === 'talk') {
+      const voice = this.escapeForBash(setting.voice || 'Ava');
+      const text = this.escapeForBash(setting.text || 'Permission required');
+
+      script += `(
+    TMPFILE="/tmp/claude-notify-permission-$$.aiff"
+    say -v "${voice}" -o "$TMPFILE" "${text}"
+    afplay -v $VOLUME "$TMPFILE"
+    rm -f "$TMPFILE" 2>/dev/null
+) &
+`;
+    } else {
+      const sound = this.sanitizeSoundName(setting.sound || 'Glass');
+      script += `afplay -v $VOLUME "/System/Library/Sounds/${sound}.aiff" &
+`;
+    }
+
+    script += `
 exit 0
 `;
 
