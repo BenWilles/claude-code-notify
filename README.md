@@ -71,9 +71,18 @@ Open the Claude Notify sidebar to:
 
 The extension installs a hook into Claude Code's settings that triggers a notification script whenever Claude emits a notification event. The script reads your configuration and plays the appropriate audio feedback.
 
-## Known Issues
+## Compatibility
 
-- **VS Code Chat Panel**: In the VS Code chat panel, only **Response Complete** (`response_complete`) notifications work. The other notification types — Permission Prompt (`permission_prompt`), Idle Prompt (`idle_prompt`), and Elicitation Dialog (`elicitation_dialog`) — only work in the terminal. This is a [known limitation](https://github.com/anthropics/claude-code/issues/11156) on the Claude Code side.
+This extension works in both environments:
+
+| Notification | Terminal CLI | VSCode IDE |
+|--------------|--------------|------------|
+| Response Complete | ✅ | ✅ |
+| Permission Prompt | ✅ | ✅ |
+| Idle Prompt | ✅ | ❌ |
+| Elicitation Dialog | ✅ | ❌ |
+
+**Note:** The VSCode IDE uses the `PermissionRequest` hook for permission notifications, while the Terminal CLI uses the `Notification` hook. Both are automatically configured when you install the extension.
 
 ## License
 
